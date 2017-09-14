@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigCBatchProvisioning", "ConsoleApplication1\BigCBatchProvisioning.csproj", "{DA298EDC-2B91-434C-9C5A-1393D0C3C6F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigCBatchProvisioning", "\BigCBatchProvisioning.csproj", "{DA298EDC-2B91-434C-9C5A-1393D0C3C6F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
