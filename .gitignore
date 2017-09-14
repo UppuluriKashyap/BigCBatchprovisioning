@@ -1,0 +1,9 @@
+.vs/
+*.user
+*.suo
+*.pdb
+*.lock.*
+bin
+obj
+logs
+packages/
