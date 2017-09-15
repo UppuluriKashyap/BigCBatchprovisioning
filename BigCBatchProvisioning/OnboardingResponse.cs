@@ -13,5 +13,6 @@ namespace BigCBatchProvisioning
         public string createdDate { get; set; }
         public string emailedDate { get; set; }
         public string licenseKey { get; set; }
+        public string errorMessage { get; set; }
     }
 }

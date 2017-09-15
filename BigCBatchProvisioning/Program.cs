@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -30,56 +33,72 @@ namespace BigCBatchProvisioning
                 var json = JsonConvert.SerializeObject(accountRequest);
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                 request.Method = HttpMethod.Post;
+                var onboardingResponse = new OnboardingResponse();
                 var response = await HttpClientPool.ClientPool.SendAsync(request).ConfigureAwait(false);
                 var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-              /*  if (result != null && result.Contains("error"))
+                if (result != null && result.Contains("error"))
                 {
-                    System.IO.File.WriteAllText(@"C:/git/develop/BigCBatchprovisioning/Error Details.txt", result);
-                } */
-                var onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
+                    onboardingResponse.errorMessage = result;
+                    return onboardingResponse;
+                }
+                onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
                 return onboardingResponse;
             }
         }
 
-
         static void Main(string[] args)
         {
-            var excel =
-                new ExcelMapper(
-                        "C:/git/develop/BigCBatchprovisioning/BigCommerceBatchLoad.xlsx");
-            var excelData = excel.Fetch<ExcelInputData>().ToList();
-            CompanyAddress companyAddress = null;
-            NewAccountRequestModel accountRequest = null;
-            HttpRequestMessage request = null;
-            foreach (var account in excelData)
+            Console.WriteLine("Starting BigC batch provisioning");
+            try
             {
-                companyAddress = new CompanyAddress
+                var excel =
+                    new ExcelMapper(
+                        "C:/git/develop/BigCBatchprovisioning/BigCommerceBatchLoad.xlsx");
+                var actualSheetName = "avalara_migration-11-9-17-no-tr";
+                var testSheetName = "From BC to Avalara";
+                var excelData = excel.Fetch<ExcelInputData>().ToList();
+                List<ExcelInputData> results = new List<ExcelInputData>();
+                foreach (var account in excelData)
                 {
-                    line = account.merchant_hq_street,
-                    city = account.merchant_hq_city,
-                    region = account.merchant_hq_state,
-                    country = account.merchant_hq_country,
-                    postalCode = account.merchant_hq_postalcode
-                };
-                accountRequest = new NewAccountRequestModel()
-                {
-                    offer = "BigCommerceAvataxIncluded",
-                    accountName = account.merchant_name,
-                    firstName = account.contact_first_name,
-                    lastName = account.contact_last_name,
-                    title = account.contact_title,
-                    phoneNumber = account.contact_phone,
-                    email = account.contact_email,
-                    welcomeEmail = "Custom",
-                    companyAddress = companyAddress,
-                    acceptAvalaraTermsAndConditions = true,
-                    haveReadAvalaraTermsAndConditions = true
-                };
-                var onboardingResponse = callOnboarding(accountRequest).Result;
-                account.AvaTaxSoftwareLicenseKey = onboardingResponse.licenseKey;
-                account.taxAvalaraAccountNumber = onboardingResponse.accountId;
-            }
+                    var companyAddress = new CompanyAddress
+                    {
+                        line = account.merchant_hq_street,
+                        city = account.merchant_hq_city,
+                        region = account.merchant_hq_state,
+                        country = account.merchant_hq_country,
+                        postalCode = account.merchant_hq_postalcode
+                    };
+                    var accountRequest = new NewAccountRequestModel()
+                    {
+                        offer = "BigCommerceAvataxIncluded",
+                        accountName = account.merchant_name,
+                        firstName = account.contact_first_name,
+                        lastName = account.contact_last_name,
+                        title = account.contact_title,
+                        phoneNumber = account.contact_phone,
+                        email = account.contact_email,
+                        welcomeEmail = "Custom",
+                        companyAddress = companyAddress,
+                        acceptAvalaraTermsAndConditions = true,
+                        haveReadAvalaraTermsAndConditions = true
+                    };
+                    var onboardingResponse = callOnboarding(accountRequest).Result;
+                    account.taxAvalaraAccountNumber = onboardingResponse.accountId;
+                    account.avaTaxSoftwareLicenseKey = onboardingResponse.licenseKey;
+                    account.errorMessage = onboardingResponse.errorMessage;
+                    results.Add(account);
+                }
 
+                // Update this with the actual sheet name befor shipping this.
+                excel.Save("C:/git/develop/BigCBatchprovisioning/BigCommerceBatchLoad.xlsx", results, testSheetName);
+                Console.WriteLine("Completed batch provisioning.");
+                Console.Read();
+
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("The excel sheet is open. Please close the excel sheet and try again.");
+            }
         }
     }
 }

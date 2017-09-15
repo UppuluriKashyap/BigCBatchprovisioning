@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Ganss.Excel;
 
 namespace BigCBatchProvisioning
 {
@@ -41,6 +42,9 @@ namespace BigCBatchProvisioning
         { get; set; }
         public string contact_postalcode { get; set; }
         public string taxAvalaraAccountNumber { get; set; }
-        public string AvaTaxSoftwareLicenseKey { get; set; }
+        [Column("AvaTax Software License Key")]
+        public string avaTaxSoftwareLicenseKey { get; set; }
+        [Column("Error Message")]
+        public string errorMessage { get; set; }
     }
 }
