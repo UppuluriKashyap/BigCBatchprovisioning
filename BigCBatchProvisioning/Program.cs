@@ -14,21 +14,33 @@ namespace BigCBatchProvisioning
 {
     class Program
     {
-        private static HttpRequestMessage CreateNewAccountRequest()
+        /// <summary>
+        /// Creates the Onboarding API request
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private static HttpRequestMessage CreateOnboardingAPIRequest(string userName, string password)
         {
             var request = new HttpRequestMessage();
 
             request.SetBaseUri("https://cqa-restv2.avalara.net/api/v2/accounts/request");
             request.Headers.Add("Accept", "application/json");
-
-            request.SetBasicAuth("DevSystemAdmin@avalara.com", "kennwort");
+            request.SetBasicAuth(userName, password);
 
             return request;
         }
 
-        private static async Task<OnboardingResponse> callOnboarding(NewAccountRequestModel accountRequest)
+        /// <summary>
+        /// Calls the Onboarding API to provision the account.
+        /// </summary>
+        /// <param name="accountRequest"></param>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private static async Task<OnboardingResponse> callOnboarding(NewAccountRequestModel accountRequest, string userName, string password)
         {
-            using (var request = CreateNewAccountRequest())
+            using (var request = CreateOnboardingAPIRequest(userName, password))
             {
                 var json = JsonConvert.SerializeObject(accountRequest);
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -48,6 +60,13 @@ namespace BigCBatchProvisioning
 
         static void Main(string[] args)
         {
+            // Reading the username and password from the user
+            Console.Write("Enter the username: ");
+            string userName = Console.ReadLine();
+            Console.Write("Enter the password: ");
+            string password = Console.ReadLine();
+
+            // Starting the batch provisioning
             Console.WriteLine("Starting BigC batch provisioning");
             try
             {
@@ -64,7 +83,7 @@ namespace BigCBatchProvisioning
                     {
                         line = account.merchant_hq_street,
                         city = account.merchant_hq_city,
-                        region = account.merchant_hq_state,
+                        region = account.updatedMerchantHqState,
                         country = account.merchant_hq_country,
                         postalCode = account.merchant_hq_postalcode
                     };
@@ -82,7 +101,7 @@ namespace BigCBatchProvisioning
                         acceptAvalaraTermsAndConditions = true,
                         haveReadAvalaraTermsAndConditions = true
                     };
-                    var onboardingResponse = callOnboarding(accountRequest).Result;
+                    var onboardingResponse = callOnboarding(accountRequest, userName, password).Result;
                     account.taxAvalaraAccountNumber = onboardingResponse.accountId;
                     account.avaTaxSoftwareLicenseKey = onboardingResponse.licenseKey;
                     account.errorMessage = onboardingResponse.errorMessage;
@@ -90,7 +109,9 @@ namespace BigCBatchProvisioning
                 }
 
                 // Update this with the actual sheet name befor shipping this.
+
                 excel.Save("C:/git/develop/BigCBatchprovisioning/BigCommerceBatchLoad.xlsx", results, testSheetName);
+
                 Console.WriteLine("Completed batch provisioning.");
                 Console.Read();
 

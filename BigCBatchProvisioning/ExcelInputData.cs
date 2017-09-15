@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using System.Text;
 using Ganss.Excel;
@@ -8,16 +9,15 @@ namespace BigCBatchProvisioning
 {
     class ExcelInputData
     {
-        public string merchant_name
-        { get; set; }
-        public string merchant_website
-        { get; set; }
-        public string merchant_hq_street
-        { get; set; }
-        public string merchant_hq_city
-        { get; set; }
-        public string merchant_hq_state
-        { get; set; }
+        public string storeId { get; set; }
+        public string storeHash { get; set; }
+        public string merchant_name { get; set; }
+        public string merchant_website { get; set; }
+        public string merchant_hq_street { get; set; }
+        public string merchant_hq_city { get; set; }
+        public string merchant_hq_state { get; set; }
+        [Column("Updated Merchant_HQ_State")]
+        public string updatedMerchantHqState { get; set; }
         public string merchant_hq_country
         { get; set; }
         public string merchant_hq_postalcode
