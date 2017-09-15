@@ -1,24 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Principal;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Ganss.Excel;
+using Newtonsoft.Json;
 
 namespace BigCBatchProvisioning
 {
     class Program
     {
+        private static HttpRequestMessage CreateNewAccountRequest()
+        {
+            var request = new HttpRequestMessage();
+
+            request.SetBaseUri("https://cqa-restv2.avalara.net/api/v2/accounts/request");
+            request.Headers.Add("Accept", "application/json");
+
+            request.SetBasicAuth("DevSystemAdmin@avalara.com", "kennwort");
+
+            return request;
+        }
+
+        private static async Task<OnboardingResponse> callOnboarding(NewAccountRequestModel accountRequest)
+        {
+            using (var request = CreateNewAccountRequest())
+            {
+                var json = JsonConvert.SerializeObject(accountRequest);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                request.Method = HttpMethod.Post;
+                var response = await HttpClientPool.ClientPool.SendAsync(request).ConfigureAwait(false);
+                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+              /*  if (result != null && result.Contains("error"))
+                {
+                    System.IO.File.WriteAllText(@"C:/git/develop/BigCBatchprovisioning/Error Details.txt", result);
+                } */
+                var onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
+                return onboardingResponse;
+            }
+        }
+
+
         static void Main(string[] args)
         {
-            var excelData =
+            var excel =
                 new ExcelMapper(
-                        "C:/Users/kashyap.uppuluri/Documents/visual studio 2015/Projects/ConsoleApplication1/BigCommerceBatchLoad.xlsx")
-                    .Fetch<ExcelInputData>().ToList();
+                        "C:/git/develop/BigCBatchprovisioning/BigCommerceBatchLoad.xlsx");
+            var excelData = excel.Fetch<ExcelInputData>().ToList();
             CompanyAddress companyAddress = null;
             NewAccountRequestModel accountRequest = null;
+            HttpRequestMessage request = null;
             foreach (var account in excelData)
             {
                 companyAddress = new CompanyAddress
@@ -43,9 +75,9 @@ namespace BigCBatchProvisioning
                     acceptAvalaraTermsAndConditions = true,
                     haveReadAvalaraTermsAndConditions = true
                 };
-
-
-
+                var onboardingResponse = callOnboarding(accountRequest).Result;
+                account.AvaTaxSoftwareLicenseKey = onboardingResponse.licenseKey;
+                account.taxAvalaraAccountNumber = onboardingResponse.accountId;
             }
 
         }

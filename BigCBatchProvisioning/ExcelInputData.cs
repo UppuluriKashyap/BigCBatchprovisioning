@@ -40,7 +40,7 @@ namespace BigCBatchProvisioning
         public string contact_country
         { get; set; }
         public string contact_postalcode { get; set; }
-        public bool? acceptAvalaraTermsAndConditions { get; set; }
-        public bool? haveReadAvalaraTermsAndConditions { get; set; }
+        public string taxAvalaraAccountNumber { get; set; }
+        public string AvaTaxSoftwareLicenseKey { get; set; }
     }
 }
