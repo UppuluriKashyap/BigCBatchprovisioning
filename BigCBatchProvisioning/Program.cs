@@ -42,19 +42,26 @@ namespace BigCBatchProvisioning
         {
             using (var request = CreateOnboardingAPIRequest(userName, password))
             {
-                var json = JsonConvert.SerializeObject(accountRequest);
-                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                request.Method = HttpMethod.Post;
-                var onboardingResponse = new OnboardingResponse();
-                var response = await HttpClientPool.ClientPool.SendAsync(request).ConfigureAwait(false);
-                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                if (result != null && result.Contains("error"))
+                try
                 {
-                    onboardingResponse.errorMessage = result;
+                    var json = JsonConvert.SerializeObject(accountRequest);
+                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    request.Method = HttpMethod.Post;
+                    var onboardingResponse = new OnboardingResponse();
+                    var response = await HttpClientPool.ClientPool.SendAsync(request).ConfigureAwait(false);
+                    var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    if (result != null && result.Contains("error"))
+                    {
+                        onboardingResponse.errorMessage = result;
+                        return onboardingResponse;
+                    }
+                    onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
                     return onboardingResponse;
                 }
-                onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
-                return onboardingResponse;
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Service Unavailable");
+                }
             }
         }
 
@@ -119,6 +126,7 @@ namespace BigCBatchProvisioning
             catch (IOException)
             {
                 Console.WriteLine("The excel sheet is open. Please close the excel sheet and try again.");
+                Console.Read();
             }
         }
     }
