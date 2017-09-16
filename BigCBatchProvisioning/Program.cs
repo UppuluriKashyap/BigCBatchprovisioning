@@ -42,8 +42,7 @@ namespace BigCBatchProvisioning
         {
             using (var request = CreateOnboardingAPIRequest(userName, password))
             {
-                try
-                {
+                
                     var json = JsonConvert.SerializeObject(accountRequest);
                     request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     request.Method = HttpMethod.Post;
@@ -58,11 +57,7 @@ namespace BigCBatchProvisioning
                     onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
                     return onboardingResponse;
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Service Unavailable");
-                }
-            }
+            
         }
 
         static void Main(string[] args)
@@ -122,6 +117,11 @@ namespace BigCBatchProvisioning
                 Console.WriteLine("Completed batch provisioning.");
                 Console.Read();
 
+            }
+            catch (AggregateException)
+            {
+                Console.WriteLine("Service Unavailable. Please try again later.");
+                Console.Read();
             }
             catch (IOException)
             {
