@@ -40,24 +40,22 @@ namespace BigCBatchProvisioning
         /// <returns></returns>
         private static async Task<OnboardingResponse> callOnboarding(NewAccountRequestModel accountRequest, string userName, string password)
         {
-            using (var request = CreateOnboardingAPIRequest(userName, password))
-            {
-                
-                    var json = JsonConvert.SerializeObject(accountRequest);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                    request.Method = HttpMethod.Post;
-                    var onboardingResponse = new OnboardingResponse();
-                    var response = await HttpClientPool.ClientPool.SendAsync(request).ConfigureAwait(false);
-                    var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    if (result != null && result.Contains("error"))
-                    {
-                        onboardingResponse.errorMessage = result;
-                        return onboardingResponse;
-                    }
-                    onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
+            using (var request = CreateOnboardingAPIRequest(userName, password)) {
+
+                var json = JsonConvert.SerializeObject(accountRequest);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                request.Method = HttpMethod.Post;
+                var onboardingResponse = new OnboardingResponse();
+                var response = await HttpClientPool.ClientPool.SendAsync(request).ConfigureAwait(false);
+                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                if (result != null && result.Contains("error")) {
+                    onboardingResponse.errorMessage = result;
                     return onboardingResponse;
                 }
-            
+                onboardingResponse = JsonConvert.DeserializeObject<OnboardingResponse>(result);
+                return onboardingResponse;
+            }
+
         }
 
         static void Main(string[] args)
@@ -70,8 +68,7 @@ namespace BigCBatchProvisioning
 
             // Starting the batch provisioning
             Console.WriteLine("Starting BigC batch provisioning");
-            try
-            {
+            try {
                 var excel =
                     new ExcelMapper(
                         "C:/git/develop/BigCBatchprovisioning/BigCommerceBatchLoad.xlsx");
@@ -79,8 +76,7 @@ namespace BigCBatchProvisioning
                 var testSheetName = "From BC to Avalara";
                 var excelData = excel.Fetch<ExcelInputData>().ToList();
                 List<ExcelInputData> results = new List<ExcelInputData>();
-                foreach (var account in excelData)
-                {
+                foreach (var account in excelData) {
                     var companyAddress = new CompanyAddress
                     {
                         line = account.merchant_hq_street,
@@ -118,13 +114,11 @@ namespace BigCBatchProvisioning
                 Console.Read();
 
             }
-            catch (AggregateException)
-            {
+            catch (AggregateException) {
                 Console.WriteLine("Service Unavailable. Please try again later.");
                 Console.Read();
             }
-            catch (IOException)
-            {
+            catch (IOException) {
                 Console.WriteLine("The excel sheet is open. Please close the excel sheet and try again.");
                 Console.Read();
             }
