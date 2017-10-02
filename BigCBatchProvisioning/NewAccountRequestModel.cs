@@ -20,6 +20,7 @@ namespace BigCBatchProvisioning
         public string userPassword { get; set; }
         public string welcomeEmail { get; set; }
         public CompanyAddress companyAddress { get; set; }
+        public string companyCode { get; set; }
         public List<string> properties { get; set; }
         public bool? acceptAvalaraTermsAndConditions { get; set; }
         public bool? haveReadAvalaraTermsAndConditions { get; set; }

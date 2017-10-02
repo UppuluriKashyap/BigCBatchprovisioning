@@ -10,6 +10,8 @@ namespace BigCBatchProvisioning
     class ExcelInputData
     {
         public string storeId { get; set; }
+        [Column("company_code")]
+        public string company_code { get; set; }
         public string storeHash { get; set; }
         [Column("merchant_name")]
         public string merchant_name { get; set; }
