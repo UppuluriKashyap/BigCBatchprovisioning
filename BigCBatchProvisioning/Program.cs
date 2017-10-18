@@ -76,7 +76,7 @@ namespace BigCBatchProvisioning
             try {
                 var excel =
                     new ExcelMapper(
-                        "C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 10 percent.xlsx");
+                        "C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx");
                 var actualSheetName = "Sheet1";
                 var excelData = excel.Fetch<ExcelInputData>().ToList();
                 List<ExcelInputData> results = new List<ExcelInputData>();
@@ -95,7 +95,7 @@ namespace BigCBatchProvisioning
                         accountName = account.merchant_name,
                         firstName = account.contact_first_name,
                         lastName = account.contact_last_name,
-                        title = account.contact_title,
+                        title = !string.IsNullOrWhiteSpace(account.contact_title) ? account.contact_title : null,
                         phoneNumber = account.contact_phone,
                         email = account.contact_email,
                         welcomeEmail = "Custom",
@@ -114,18 +114,20 @@ namespace BigCBatchProvisioning
 
                 // Update this with the actual sheet name befor shipping this.
 
-                excel.Save("C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 10 percent.xlsx", results, actualSheetName);
+                excel.Save("C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx", results, actualSheetName);
 
                 Console.WriteLine("Completed batch provisioning.");
                 Console.Read();
 
             }
-            catch (AggregateException) {
+            catch (AggregateException ex) {
                 Console.WriteLine("Service Unavailable. Please try again later.");
+                Console.WriteLine(ex);
                 Console.Read();
             }
-            catch (IOException) {
+            catch (IOException ex) {
                 Console.WriteLine("The excel sheet is open. Please close the excel sheet and try again.");
+                Console.Write(ex);
                 Console.Read();
             }
         }

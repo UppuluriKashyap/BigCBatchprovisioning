@@ -10,7 +10,7 @@ namespace BigCBatchProvisioning
     class ExcelInputData
     {
         public string storeId { get; set; }
-        [Column("company_code")]
+        [Column("storeid")]
         public string company_code { get; set; }
         public string storeHash { get; set; }
         [Column("merchant_name")]
@@ -23,15 +23,15 @@ namespace BigCBatchProvisioning
         public string merchant_hq_city { get; set; }
         [Column("merchant_hq_state")]
         public string merchant_hq_state { get; set; }
-        [Column("Updated Merchant_HQ_State")]
+        [Column("new_merchant_hq_state")]
         public string updatedMerchantHqState { get; set; }
         [Column("merchant_hq_country")]
         public string merchant_hq_country{ get; set; }
         [Column("merchant_hq_postalcode")]
         public string merchant_hq_postalcode{ get; set; }
-        [Column("contact_first_name")]
+        [Column("new_contact_first_name")]
         public string contact_first_name{ get; set; }
-        [Column("contact_last_name")]
+        [Column("new_contact_last_name")]
         public string contact_last_name{ get; set; }
         [Column("contact_title")]
         public string contact_title{ get; set; }
