@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Ganss.Excel;
 using Newtonsoft.Json;
@@ -72,14 +73,14 @@ namespace BigCBatchProvisioning
 
             // Starting the batch provisioning
             Console.WriteLine("Starting BigC batch provisioning");
-            Console.WriteLine("Merchant Name =======================  AccountId =================== LicenseKey");
+            Console.WriteLine("Merchant Name =======================  AccountId =================== LicenseKey ================ Error Message");
+            var excel =
+                new ExcelMapper(
+                    "C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx");
+            var actualSheetName = "Sheet1";
+            List<ExcelInputData> results = new List<ExcelInputData>();
             try {
-                var excel =
-                    new ExcelMapper(
-                        "C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx");
-                var actualSheetName = "Sheet1";
                 var excelData = excel.Fetch<ExcelInputData>().ToList();
-                List<ExcelInputData> results = new List<ExcelInputData>();
                 foreach (var account in excelData) {
                     var companyAddress = new CompanyAddress
                     {
@@ -105,14 +106,15 @@ namespace BigCBatchProvisioning
                         haveReadAvalaraTermsAndConditions = true
                     };
                     var onboardingResponse = callOnboarding(accountRequest, url, userName, password).Result;
+                    Thread.Sleep(90000);
                     account.taxAvalaraAccountNumber = onboardingResponse.accountId;
                     account.avaTaxSoftwareLicenseKey = onboardingResponse.licenseKey;
                     account.errorMessage = onboardingResponse.errorMessage;
-                    Console.WriteLine(account.merchant_name + " ======================= " + onboardingResponse.accountId + " =================== " + onboardingResponse.licenseKey);
+                    Console.WriteLine(account.merchant_name + " ======================= " + onboardingResponse.accountId + " =================== " + onboardingResponse.licenseKey + "==========" + onboardingResponse.errorMessage);
                     results.Add(account);
                 }
 
-                // Update this with the actual sheet name befor shipping this.
+                // Update this with the actual sheet name before shipping this.
 
                 excel.Save("C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx", results, actualSheetName);
 
@@ -121,11 +123,13 @@ namespace BigCBatchProvisioning
 
             }
             catch (AggregateException ex) {
+                excel.Save("C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx", results, actualSheetName);
                 Console.WriteLine("Service Unavailable. Please try again later.");
                 Console.WriteLine(ex);
                 Console.Read();
             }
             catch (IOException ex) {
+                excel.Save("C:/git/develop/BigCBatchprovisioning/BC Migration Customers - 90 percent - values only.xlsx", results, actualSheetName);
                 Console.WriteLine("The excel sheet is open. Please close the excel sheet and try again.");
                 Console.Write(ex);
                 Console.Read();
